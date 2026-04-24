@@ -1,21 +1,26 @@
 #!/bin/sh
 # Probalyze — start script for Synology NAS (no Docker)
+# Secrets are in .env (never committed to git)
 
 APP_DIR="/volume1/web/Probalyze"
 NODE="/usr/local/bin/node"
 PYTHON="/var/packages/Python3.9/target/usr/bin/python3"
-UVICORN="$HOME/.local/bin/uvicorn"
 LOG_DIR="$APP_DIR/logs"
 
 mkdir -p "$LOG_DIR"
 
-# Load env vars
-set -a
-. "$APP_DIR/.env"
-set +a
-
 export PYTHONPATH="$APP_DIR"
 export NEXT_PUBLIC_API_URL="https://probalyze.picsnature.fr/api"
+
+# Load .env (robust on Synology ash/dash)
+if [ -f "$APP_DIR/.env" ]; then
+    while IFS='=' read -r key val; do
+        case "$key" in
+            '#'*|'') continue ;;
+        esac
+        export "$key=$val"
+    done < "$APP_DIR/.env"
+fi
 
 # ── Redis ─────────────────────────────────────────────────────────────────────
 if ! redis-cli ping > /dev/null 2>&1; then
@@ -28,7 +33,7 @@ echo "[probalyze] Redis: OK"
 # ── Kill existing processes ────────────────────────────────────────────────────
 pkill -f "uvicorn apps.api.main" 2>/dev/null
 pkill -f "apps.worker.main" 2>/dev/null
-pkill -f "standalone/server.js" 2>/dev/null
+pkill -f "next start" 2>/dev/null
 sleep 1
 
 # ── FastAPI (port 8000) ────────────────────────────────────────────────────────
@@ -40,7 +45,7 @@ nohup "$PYTHON" -m uvicorn apps.api.main:app \
 echo $! > "$LOG_DIR/api.pid"
 echo "[probalyze] API PID: $(cat $LOG_DIR/api.pid)"
 
-# ── Worker (background) ────────────────────────────────────────────────────────
+# ── Worker ────────────────────────────────────────────────────────────────────
 echo "[probalyze] Starting Worker..."
 cd "$APP_DIR"
 nohup "$PYTHON" -m apps.worker.main \
