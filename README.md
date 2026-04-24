@@ -79,7 +79,7 @@ docker compose up --build
 |---------|-----|
 | API     | http://localhost:8000 |
 | Docs    | http://localhost:8000/docs |
-| Web     | http://localhost:3000 |
+| Web     | http://localhost:3001 |
 
 ### 5. Lancer en local (dev)
 
