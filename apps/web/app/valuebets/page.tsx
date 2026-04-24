@@ -22,8 +22,10 @@ export default function ValueBetsPage() {
 
   useEffect(() => {
     setLoading(true);
+    const params: Record<string, string | number | boolean> = { sort_by: sortBy, min_value: minValue, page, page_size: 25 };
+    if (market) params.market = market;
     api
-      .valueBets({ market: market || undefined, sort_by: sortBy, min_value: minValue, page, page_size: 25 })
+      .valueBets(params)
       .then((r) => setBets(r.data))
       .catch(console.error)
       .finally(() => setLoading(false));

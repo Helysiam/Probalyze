@@ -9,11 +9,15 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str = "sb_publishable_Rsnvz3wRJLynvPqyu5uHXQ_QKL2mySV"
 
     # Redis
-    REDIS_URL: str = "redis://redis:6379/0"
+    REDIS_URL: str = "redis://localhost:6379/0"
     REDIS_TTL_DEFAULT: int = 120
 
     # API
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "https://probalyze.picsnature.fr"]
+    ALLOWED_ORIGINS: str = "http://localhost:3001,https://probalyze.picsnature.fr"
+
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        return [o.strip() for o in self.ALLOWED_ORIGINS.split(",")]
     API_PORT: int = 8000
 
     # Odds API (odds-api.com)

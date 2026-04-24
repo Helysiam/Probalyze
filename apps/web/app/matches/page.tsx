@@ -15,7 +15,10 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
 
   let matches: Match[] = [];
   try {
-    const res = await api.matches({ league: league || undefined, status: status || undefined, page, page_size: 30 });
+    const params: Record<string, string | number | boolean> = { page, page_size: 30 };
+    if (league) params.league = league;
+    if (status) params.status = status;
+    const res = await api.matches(params);
     matches = res.data;
   } catch {}
 
